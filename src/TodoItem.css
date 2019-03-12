@@ -1,0 +1,16 @@
+#todoItem{
+  margin-top: .3em;
+  padding: 0.2em;
+  display: flex;
+  align-items: center;
+}
+
+#todoItem>#todo{
+    flex-grow: 1;
+}
+#todoItem input[type=checkbox]{
+   margin-right: 0.2em; 
+}
+#todoItem button{
+   cursor: pointer;
+}

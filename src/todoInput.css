@@ -1,0 +1,9 @@
+.todoInput{
+   margin-bottom: 0.5em; 
+}
+.add-btn{
+    margin-left: 0.5em;
+    border-radius: 0.1em;
+    background: #ccc;
+    cursor: pointer;
+}
