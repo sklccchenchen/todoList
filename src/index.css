@@ -16,6 +16,7 @@ code {
 
 body{
   background: #ddd;
+  /* z-index: -2; */
 }
 #root{
   display: flex;

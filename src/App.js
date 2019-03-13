@@ -4,32 +4,55 @@ import {TodoInput} from './TodoInput'
 import TodoItem from './TodoItem'
 import './App.css';
 import './reset.css'
-import * as localStorage from './localStorage'
+import UserDialog from './UserDialog'
+import {getCurrentUser, signOut,Copy,TodoModel} from './leanCloud'
+// import * as localStorage from './localStorage'
+//import AV from './leanCloud'
 
 
 class App extends Component {
   constructor(){
     super()
+    // this.todo = AV.Object.createWithoutData('Todo');
+    // this.ObjectId = this.todo.id
     this.state = {
+      user: getCurrentUser() || {},
       newTodo: '',
-      todoList: localStorage.load('todoList') || []
+      todoList: []
+      // Object.keys(this.todo._hashedJSON) ||
+      // todoList: localStorage.load('todoList') || []
         // {id:1,title:'第一个待办事项',completed:false,deleted:false},
         // {id:2,title:'第二个待办事项',completed:false,deleted:false},
-        // {id:3,title:'第三个待办事项',completed:false,deleted:false}
-      
+        // {id:3,title:'第三个待办事项',completed:false,deleted:false}  
+    }
+    // var Todo = AV.Object.extend('todo');
+    // var todo = new Todo();
+    let user = getCurrentUser()
+    if (user) {
+      TodoModel.getByUser(user, (todos) => {
+        let stateCopy = JSON.parse(JSON.stringify(this.state))
+        stateCopy.todoList = todos
+        this.setState(stateCopy)
+      })
     }
   }
 
+
   addTodo(e){
-    this.state.todoList.push({
-      id: idMaker(),
+    let newTodo={
       title: e.target.value,
       status: null,
       deleted: false
-    })
-    this.setState({
-      newTodo: '',
-      todoList: this.state.todoList
+    }
+    TodoModel.create(newTodo, (id) => {
+      newTodo.id = id
+      this.state.todoList.push(newTodo)
+      this.setState({
+        newTodo: '',
+        todoList: this.state.todoList
+      })
+    }, (error) => {
+      console.log(error)
     })
 
   }
@@ -41,14 +64,38 @@ class App extends Component {
 
   }
   delete(e,todo){
-    todo.deleted = true
-    this.setState(this.state)
+    TodoModel.destroy(todo.id, () => {
+      todo.deleted = true
+      this.setState(this.state)
+    })
   }
   
   toggle(e,todo){
+    let oldStatus = todo.status
     todo.status = todo.status === 'completed' ? '' : 'completed'
-    this.setState(this.state)
+    TodoModel.update(todo, () => {
+      this.setState(this.state)
+    }, (error) => {
+      todo.status = oldStatus
+      this.setState(this.state)
+    })
     
+  }
+  onSignUpOrSignIn(user){
+    let stateCopy = Copy(this.state)
+    stateCopy.user = user
+    this.setState(stateCopy)
+  }
+  signOut(){
+    signOut()
+    let stateCopy = Copy(this.state)
+    stateCopy.user = {}
+    this.setState(stateCopy)
+  }
+
+  componentWillMount(){
+    // this.todo = AV.Object.createWithoutData('Todo');
+    // this.ObjectId = this.todo.id
   }
 
   render() {
@@ -63,7 +110,9 @@ class App extends Component {
  
     return (
       <div className="App">
-        <h1>我的待办</h1>
+         <h1 className="title">{this.state.user.username||'我'}的待办
+          {this.state.user.id ? <button onClick={this.signOut.bind(this)}>登出</button> : null}
+        </h1>
         <div className="inputWrapper">
           <TodoInput content={this.state.newTodo} 
               onChange={this.changeTitle.bind(this)} 
@@ -72,19 +121,23 @@ class App extends Component {
         <ol className="todoList">
           {todos}
         </ol>
+        {this.state.user.id ? 
+          null : 
+          <UserDialog 
+            onSignUp={this.onSignUpOrSignIn.bind(this)} 
+            onSignIn={this.onSignUpOrSignIn.bind(this)}/>}
       </div>
     )
   }
   componentDidUpdate(){
-    localStorage.save('todoList',this.state.todoList)
+    // localStorage.save('todoList',this.state.todoList)
+        // 第一个参数是 className，第二个参数是 objectId
+    // this.todo = AV.Object.createWithoutData('Todo',this.ObjectId);
+  //   this.todo.set(this.state.todoList)
+  //   this.todo.save().then(function(todo){
+  //     console.log(todo.toJSON())
+  //   });   
   }
 }
 
 export default App
-
-let id = 0;
-
-function idMaker(){
-  id += 1;
-  return id
-}

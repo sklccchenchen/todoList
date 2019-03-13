@@ -4,9 +4,22 @@
   background: white;
   margin: 2em;
   padding: 0 1em;
-  min-height: 20em;
+  min-height:30em;
   min-width: 25em;
   box-shadow: 0 0 1em hsla(0,0%,0%,.15);
+}
+.App>.title{
+  display:table;
+}
+.App>.title>button{
+  font: 0.6em bold Arial;
+  margin-left: 0.8em;
+  padding: 0.1em 0.2em;
+  color:red;
+  vertical-align: middle;
+  border-radius: 0.2em;
+  background: #ccc;
+  cursor: pointer;
 }
 .App > .todoList > li:nth-child(odd){
 
